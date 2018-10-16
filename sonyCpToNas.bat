@@ -5,9 +5,8 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 
 set dest_drive=Z:
 
-set photos_files=*.jpg
-set movies_files=*.m2ts *.mp4 *.mov *.vob
-set movies_extensions=m2ts mp4 mov vob
+set extension_photo_files=jpg
+set extension_movie_files=m2ts mp4 mov vob
 
 
 set file_output_suffix=_prel
@@ -19,6 +18,7 @@ IF     .%1. == .-H. GOTO HELP
 IF     .%1. == ./?. GOTO HELP
 IF NOT .%1. == ..   set  dest_drive=%1
 
+
 IF NOT EXIST %dest_drive% (
 	echo.
 	echo Error: destination drive %dest_drive% is not mounted
@@ -26,7 +26,15 @@ IF NOT EXIST %dest_drive% (
 )
 
 
-for /f "tokens=*" %%f in ('dir /b /s !movies_files! !photos_files!') DO  (
+set extension_all_files=!extension_photo_files! !extension_movie_files!
+set all_files=
+for %%e in (!extension_all_files!) DO (
+	set all_files=!all_files! *.%%e
+)
+::echo.!all_files!
+
+
+for /f "tokens=*" %%f in ('dir /b /s !all_files!') DO  (
 	set file_name_src__full_path="%%f"
 	for %%K in (!file_name_src__full_path!) do set file_drive=%%~dK
 	for %%K in (!file_name_src__full_path!) do set file_path=%%~pK
@@ -53,7 +61,7 @@ for /f "tokens=*" %%f in ('dir /b /s !movies_files! !photos_files!') DO  (
 			
 			set file_original_found=
 			for %%E in (
-				!movies_extensions!
+				!extension_all_files!
 			) do (
 				set iter_extension=%%E
 				rem echo iter_extension=!iter_extension!
