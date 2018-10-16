@@ -64,14 +64,6 @@ if %resolution% == 1.77778 (
 	)
     GOTO ENCODE_h264
 )
-if %resolution% == 1.81818 (
-    if .%scanType%. == .Interlaced. (
-	    set script_proj=proj_h264_q%compress_quality%_1x1_i_mp4.py 
-	) else (
-        set script_proj=proj_h264_q%compress_quality%_1x1_mp4.py
-	)
-    GOTO ENCODE_h264
-)
 
 GOTO ERROR
 
@@ -120,7 +112,9 @@ GOTO ERROR
         set file_input_remux=
     )
 
-    del  %file_input%.idx2
+    IF EXIST %file_input%.idx2 (
+        del  %file_input%.idx2
+    )
     GOTO END
 
 
