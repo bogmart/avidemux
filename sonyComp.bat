@@ -5,8 +5,12 @@
 :: %2  - prefix for encoded files (eg: _prel)
 
 ::quality 25 (best is 1)
-set /a compress_quality = 25
+set /a compress_quality_sw = 25
 
+::nvidia hw compression
+set /a compress_bitrate_hw = 4000
+set /a bitrate_threshold   = 2500
+set use_hw=1
 
 set compress_remux_suffix=_remux
 
@@ -22,47 +26,65 @@ set file_output_tmp_temp_folder_HDD="%temp_folder%\%~n1_tmp.%file_output_extensi
 ::pentru compresie direct pe USB/SD trebuie folosit temp_HDD
 set file_output_tmp=%file_output_tmp_temp_folder_HDD%
 
-for /f "tokens=1" %%e in (
-   '%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -E "Width|Height" ^| %utils_path%\awk "(width==0 && height==0){width=$3$4}; {height=$3$4}; END {rez=width/height; print rez"}"'
-   ) do (
-          set resolution=%%e
-        )
+set /a bitRate = 0
+set resolution=0
+set scanType=0
 
 for /f "tokens=1" %%f in (
-   '%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -E "Scan type" ^| %utils_path%\awk "{scan=$4}; END {print scan"}"'
-   ) do (
-          set scanType=%%f
-        )
+	'%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -m1 -E "Bit rate *:" ^| %utils_path%\awk "{rate=$4$5}; END {print rate"}"'
+	) do (
+        set /a bitRate = %%f
+    )
 
-::echo res %resolution%  scanType %scanType%
-::echo.
-::echo info IN  %file_input%
-::echo info OUT %file_output%
-::goto END
+::check if bit rate is below the configured threshold
+if !bitRate! LSS !bitrate_threshold! (
+   GOTO SKIP
+)   
 
-if %resolution% == 1.25 (
-    if .%scanType%. == .Interlaced. (
-        set script_proj=proj_h264_q%compress_quality%_1x1_i_mp4.py 
-	) else (
-        set script_proj=proj_h264_q%compress_quality%_1x1_mp4.py
+
+if %use_hw% == 1 (
+    ::HW GPU compression
+    set script_proj=proj_nvidia_h264_q%compress_bitrate_hw%_mp4.py
+	GOTO ENCODE_h264
+	
+) else (
+    :: SW compression
+	for /f "tokens=1" %%e in (
+	   '%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -E "Width|Height" ^| %utils_path%\awk "(width==0 && height==0){width=$3$4}; {height=$3$4}; END {rez=width/height; print rez"}"'
+	   ) do (
+			  set resolution=%%e
+			)
+
+	for /f "tokens=1" %%f in (
+	   '%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -E "Scan type" ^| %utils_path%\awk "{scan=$4}; END {print scan"}"'
+	   ) do (
+			  set scanType=%%f
+			)
+
+	if %resolution% == 1.25 (
+		if .%scanType%. == .Interlaced. (
+			set script_proj=proj_h264_q%compress_quality_sw%_1x1_i_mp4.py 
+		) else (
+			set script_proj=proj_h264_q%compress_quality_sw%_1x1_mp4.py
+		)
+		GOTO ENCODE_h264
 	)
-    GOTO ENCODE_h264
-)
-if %resolution% == 1.33333 (
-    if .%scanType%. == .Interlaced. (
-        set script_proj=proj_h264_q%compress_quality%_16x9_i_mp4.py
-	) else (
-        set script_proj=proj_h264_q%compress_quality%_16x9_mp4.py
+	if %resolution% == 1.33333 (
+		if .%scanType%. == .Interlaced. (
+			set script_proj=proj_h264_q%compress_quality_sw%_16x9_i_mp4.py
+		) else (
+			set script_proj=proj_h264_q%compress_quality_sw%_16x9_mp4.py
+		)
+		GOTO ENCODE_h264
 	)
-    GOTO ENCODE_h264
-)
-if %resolution% == 1.77778 (
-    if .%scanType%. == .Interlaced. (
-	    set script_proj=proj_h264_q%compress_quality%_1x1_i_mp4.py 
-	) else (
-        set script_proj=proj_h264_q%compress_quality%_1x1_mp4.py
+	if %resolution% == 1.77778 (
+		if .%scanType%. == .Interlaced. (
+			set script_proj=proj_h264_q%compress_quality_sw%_1x1_i_mp4.py 
+		) else (
+			set script_proj=proj_h264_q%compress_quality_sw%_1x1_mp4.py
+		)
+		GOTO ENCODE_h264
 	)
-    GOTO ENCODE_h264
 )
 
 GOTO ERROR
@@ -75,7 +97,7 @@ GOTO ERROR
     echo script %script_proj%
     %aviDemux_path%\avidemux_cli.exe --nogui --load %file_input%  --run %scripts_path%\%script_proj% --save %file_output_tmp% 1>&0 2>&0
     echo.
-    GOTO TEST_ERRORS
+    GOTO TEST_ERROR
 
 
 :REMUX
@@ -85,7 +107,7 @@ GOTO ERROR
     GOTO ENCODE_h264
 
 
-:TEST_ERRORS
+:TEST_ERROR
     IF %ERRORLEVEL% NEQ 0  (
         IF NOT .%file_input_remux%. == .. (
             GOTO  ERROR_AVIDEMUX
@@ -117,6 +139,11 @@ GOTO ERROR
     )
     GOTO END
 
+
+:SKIP
+    echo skip: bitRate=!bitRate!
+	echo.
+    GOTO END
 
 :ERROR
 	echo.

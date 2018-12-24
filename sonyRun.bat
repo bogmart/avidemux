@@ -15,7 +15,8 @@ set utils_path=D:\zzz_temp\utils
 ::set aviDemux_path=D:\zzz_temp\avidemux.2.6.7_x64
 ::set aviDemux_path=D:\zzz_temp\avidemux.2.6.8_x64
 ::set aviDemux_path=D:\zzz_temp\avidemux.2.6.14_x64
-set aviDemux_path=D:\zzz_temp\avidemux.2.6.18_x64
+::set aviDemux_path=D:\zzz_temp\avidemux.2.6.18_x64
+set aviDemux_path=D:\zzz_temp\avidemux.2.7.1_x64
 
 
 set tempFile=%temp_folder%\sonyTemp.txt
@@ -34,7 +35,7 @@ for /f  "eol=; delims=;" %%i in (%tempFile%) do (
 		    ::exclude files already processed
             echo.!file_name_current! | findstr /C:"!file_name_old!" /C:"!file_output_suffix!" 1>nul
 		    if !errorlevel! EQU 1 (
-			echo."!file_full_old!"
+			    echo."!file_full_old!"
                 call %scripts_path%\sonyComp.bat "!file_full_old!" %file_output_suffix%
 		        set file_name_old=!file_name_current!
 				set file_full_old=!file_full_current!
@@ -55,6 +56,7 @@ for /f  "eol=; delims=;" %%i in (%tempFile%) do (
 ::last file
 echo.!file_name_current! | findstr /C:"!file_output_suffix!" 1>nul
 if !errorlevel! EQU 1 (
+    echo."!file_full_current!"
     call %scripts_path%\sonyComp.bat "!file_full_current!" %file_output_suffix%
 )
 
