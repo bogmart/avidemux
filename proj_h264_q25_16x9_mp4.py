@@ -1,9 +1,10 @@
 #PY  <- Needed to identify #
 #--automatically built--
+# avidemux.2.7.1_x64
 
 adm = Avidemux()
 adm.videoCodec("x264", "useAdvancedConfiguration=True", "general.params=AQ=25", "general.threads=0", "general.preset=ultrafast", "general.tuning=film", "general.profile=baseline", "general.fast_decode=False", "general.zero_latency=False"
-, "general.fast_first_pass=True", "general.blueray_compatibility=False", "general.fake_interlaced=False", "level=-1", "vui.sar_height=45", "vui.sar_width=64", "MaxRefFrames=3", "MinIdr=25", "MaxIdr=250"
+, "general.fast_first_pass=True", "general.blueray_compatibility=False", "general.fake_interlaced=False", "level=-1", "vui.sar_height=1", "vui.sar_width=1", "MaxRefFrames=3", "MinIdr=25", "MaxIdr=250"
 , "i_scenecut_threshold=40", "intra_refresh=False", "MaxBFrame=3", "i_bframe_adaptive=1", "i_bframe_bias=0", "i_bframe_pyramid=2", "b_deblocking_filter=True", "i_deblocking_filter_alphac0=0", "i_deblocking_filter_beta=0"
 , "cabac=True", "interlaced=False", "constrained_intra=False", "tff=True", "fake_interlaced=False", "analyze.b_8x8=True", "analyze.b_i4x4=True", "analyze.b_i8x8=True", "analyze.b_p8x8=True", "analyze.b_p16x16=False"
 , "analyze.b_b16x16=False", "analyze.weighted_pred=2", "analyze.weighted_bipred=True", "analyze.direct_mv_pred=1", "analyze.chroma_offset=0", "analyze.me_method=1", "analyze.me_range=16", "analyze.mv_range=-1"
@@ -16,4 +17,4 @@ adm.audioAddTrack(0)
 adm.audioCodec(0, "LavAAC", "bitrate=128");
 adm.audioSetDrc(0, 0)
 adm.audioSetShift(0, 0,0)
-adm.setContainer("MP4", "muxerType=0", "useAlternateMp3Tag=True")
+adm.setContainer("MP4", "muxerType=0", "useAlternateMp3Tag=False", "forceAspectRatio=True", "aspectRatio=1")

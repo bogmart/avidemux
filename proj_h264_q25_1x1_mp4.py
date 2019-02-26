@@ -1,5 +1,6 @@
 #PY  <- Needed to identify #
 #--automatically built--
+# avidemux.2.7.1_x64
 
 adm = Avidemux()
 adm.videoCodec("x264", "useAdvancedConfiguration=True", "general.params=AQ=25", "general.threads=0", "general.preset=ultrafast", "general.tuning=film", "general.profile=baseline", "general.fast_decode=False", "general.zero_latency=False"
@@ -16,4 +17,4 @@ adm.audioAddTrack(0)
 adm.audioCodec(0, "LavAAC", "bitrate=128");
 adm.audioSetDrc(0, 0)
 adm.audioSetShift(0, 0,0)
-adm.setContainer("MP4", "muxerType=0", "useAlternateMp3Tag=True")
+adm.setContainer("MP4", "muxerType=0", "useAlternateMp3Tag=False", "forceAspectRatio=True", "aspectRatio=1")

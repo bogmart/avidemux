@@ -10,7 +10,7 @@ set /a compress_quality_sw = 25
 ::nvidia hw compression
 set /a compress_bitrate_hw = 4000
 set /a bitrate_threshold   = 2500
-set use_hw=1
+set use_hw=0
 
 set compress_remux_suffix=_remux
 
@@ -30,10 +30,13 @@ set /a bitRate = 0
 set resolution=0
 set scanType=0
 
-for /f "tokens=1" %%f in (
-	'%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -m1 -E "Bit rate *:" ^| %utils_path%\awk "{rate=$4$5}; END {print rate"}"'
+:: Bit rate format:
+::   8 863 kb/s
+::   11.8 Mb/s
+for /f "tokens=1,2,3,4" %%a in (
+	'%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -m1 -E "Bit rate *:" ^| %utils_path%\sed "s/Bit rate *: //" ^| %utils_path%\sed "s/\([0-9]*\) \([0-9]*\)/\1\2/" ^| %utils_path%\sed "s/kb\/s/ 1/" ^| %utils_path%\sed "s/Mb\/s/ 1024/"  ^| %utils_path%\awk "{rez=$1 * $2}; END {print rez"}"'
 	) do (
-        set /a bitRate = %%f
+		set /a bitRate  = %%a
     )
 
 ::check if bit rate is below the configured threshold
@@ -56,29 +59,29 @@ if %use_hw% == 1 (
 			)
 
 	for /f "tokens=1" %%f in (
-	   '%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -E "Scan type" ^| %utils_path%\awk "{scan=$4}; END {print scan"}"'
+	   '%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -m 1 -E "Scan type" ^| %utils_path%\awk "{scan=$4}; END {print scan"}"'
 	   ) do (
 			  set scanType=%%f
 			)
 
-	if %resolution% == 1.25 (
-		if .%scanType%. == .Interlaced. (
+	if !resolution! == 1.33333 (
+		if .!scanType!. == .Interlaced. (
 			set script_proj=proj_h264_q%compress_quality_sw%_1x1_i_mp4.py 
 		) else (
 			set script_proj=proj_h264_q%compress_quality_sw%_1x1_mp4.py
 		)
 		GOTO ENCODE_h264
 	)
-	if %resolution% == 1.33333 (
-		if .%scanType%. == .Interlaced. (
+	if !resolution! == 1.25 (
+		if .!scanType!. == .Interlaced. (
 			set script_proj=proj_h264_q%compress_quality_sw%_16x9_i_mp4.py
 		) else (
 			set script_proj=proj_h264_q%compress_quality_sw%_16x9_mp4.py
 		)
 		GOTO ENCODE_h264
 	)
-	if %resolution% == 1.77778 (
-		if .%scanType%. == .Interlaced. (
+	if !resolution! == 1.77778 (
+		if .!scanType!. == .Interlaced. (
 			set script_proj=proj_h264_q%compress_quality_sw%_1x1_i_mp4.py 
 		) else (
 			set script_proj=proj_h264_q%compress_quality_sw%_1x1_mp4.py
@@ -147,7 +150,7 @@ GOTO ERROR
 
 :ERROR
 	echo.
-	echo ERROR:  wrong resolution %resolution%
+	echo ERROR:  wrong resolution !resolution!
 	GOTO END
 
 :ERROR_AVIDEMUX

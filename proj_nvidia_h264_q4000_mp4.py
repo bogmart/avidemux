@@ -1,5 +1,6 @@
 #PY  <- Needed to identify #
 #--automatically built--
+# avidemux.2.7.1_x64
 
 adm = Avidemux()
 adm.videoCodec("ffNvEnc", "preset=2", "profile=3", "gopsize=100", "bframes=0", "bitrate=4000", "max_bitrate=8000")
