@@ -34,7 +34,7 @@ set scanType=0
 ::   8 863 kb/s
 ::   11.8 Mb/s
 for /f "tokens=1,2,3,4" %%a in (
-	'%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -m1 -E "Bit rate *:" ^| %utils_path%\sed "s/Bit rate *: //" ^| %utils_path%\sed "s/\([0-9]*\) \([0-9]*\)/\1\2/" ^| %utils_path%\sed "s/kb\/s/ 1/" ^| %utils_path%\sed "s/Mb\/s/ 1024/"  ^| %utils_path%\awk "{rez=$1 * $2}; END {print rez"}"'
+	'%utils_path%\MediaInfo.exe %file_input% ^| %utils_path%\grep -m1 -E "Bit rate *:" ^| %utils_path%\sed "s/Bit rate *: //" ^| %utils_path%\sed "s/\([0-9]*\) \([0-9]*\)/\1\2/" ^| %utils_path%\sed "s/kb\/s/ 1/" ^| %utils_path%\sed "s/Mb\/s/ 1020/"  ^| %utils_path%\awk "{rez=$1 * $2}; END {print rez"}"'
 	) do (
 		set /a bitRate  = %%a
     )
